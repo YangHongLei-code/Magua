@@ -1,0 +1,28 @@
+package org.example.magua;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import org.example.magua.ui.MainLayout;
+
+public class App extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.initStyle(StageStyle.UNDECORATED);
+
+        MainLayout mainLayout = new MainLayout(primaryStage);
+        Scene scene = new Scene(mainLayout.getView(), 1280, 800);
+
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Magua");
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinHeight(600);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
