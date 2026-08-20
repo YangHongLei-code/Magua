@@ -10,46 +10,21 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import org.example.magua.state.AppState;
 
 /**
- * 右侧 AI 聊天面板（仅界面；发送仅打印控制台）。
+ * AI 聊天主界面（仅界面；发送仅打印控制台）。
  */
 public class ChatPanel {
 
-    private final BorderPane root = new BorderPane();
-    private final AppState appState;
-    private final VBox historyBox = new VBox(10);
+    private BorderPane root = new BorderPane();
+    private VBox historyBox = new VBox(10);
 
-    public ChatPanel(AppState appState) {
-        this.appState = appState;
-        root.setMinWidth(240);
-
-        root.setTop(buildHeader());
+    public ChatPanel() {
         root.setCenter(buildHistory());
         root.setBottom(buildInputBar());
 
         addMessage("User", "你好");
         addMessage("AI", "你好啊，我是界面演示用的助手。");
-    }
-
-    private HBox buildHeader() {
-        Label title = new Label("AI 聊天");
-
-        Button closeButton = new Button("×");
-        closeButton.setFocusTraversable(false);
-        closeButton.setOnAction(e -> {
-            System.out.println("用户点击了关闭聊天面板按钮");
-            appState.setChatPanelVisible(false);
-        });
-
-        HBox spacer = new HBox();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox header = new HBox(title, spacer, closeButton);
-        header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(4, 4, 4, 10));
-        return header;
     }
 
     private ScrollPane buildHistory() {

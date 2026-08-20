@@ -10,19 +10,21 @@ public class App extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.initStyle(StageStyle.UNDECORATED);
-
-        MainLayout mainLayout = new MainLayout(primaryStage);
-        Scene scene = new Scene(mainLayout.getView(), 1280, 800);
-
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Magua");
-        primaryStage.setMinWidth(900);
-        primaryStage.setMinHeight(600);
-        primaryStage.show();
+//        primaryStage.initStyle(StageStyle.UNDECORATED);
+//
+//        MainLayout mainLayout = new MainLayout(primaryStage);
+//        Scene scene = new Scene(mainLayout.getView(), 1280, 800);
+//
+//        primaryStage.setScene(scene);
+//        primaryStage.setTitle("Maguan");
+//        primaryStage.show();
     }
 
     public static void main(String[] args) {
         launch(args);
+
+
+
+
     }
 }
