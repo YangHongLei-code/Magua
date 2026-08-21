@@ -13,8 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Config {
-    @JsonProperty("api_key")
     private String apiKey;
-
-
+    private String apiUrl;
+    private String model;
 }
