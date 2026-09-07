@@ -1,5 +1,6 @@
-package org.example.magua.service.message;
+package org.example.magua.service.dialogue;
 
+import org.example.magua.service.message.*;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
