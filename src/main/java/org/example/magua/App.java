@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.example.magua.config.Config;
-import org.example.magua.config.ConfigManager;
 import org.example.magua.ui.MainLayout;
 
 public class App extends Application {
@@ -20,7 +19,7 @@ public class App extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("Maguan");
         primaryStage.show();
-        Config config= ConfigManager.get();
+        Config config= Config.getInstance();
         System.out.println(config);
     }
 }
