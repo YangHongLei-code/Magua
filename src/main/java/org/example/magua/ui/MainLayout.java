@@ -10,13 +10,9 @@ public class MainLayout {
 
     private BorderPane root = new BorderPane();
 
-    public MainLayout(Stage stage) {
-        TitleBar titleBar = new TitleBar(stage);
+    public MainLayout() {
         ChatPanel chatPanel = new ChatPanel();
-
-        root.setTop(titleBar.getView());
         root.setCenter(chatPanel.getView());
-        titleBar.installResizeSupport(root);
     }
 
     public BorderPane getView() {

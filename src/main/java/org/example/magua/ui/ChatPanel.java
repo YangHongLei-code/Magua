@@ -22,9 +22,6 @@ public class ChatPanel {
     public ChatPanel() {
         root.setCenter(buildHistory());
         root.setBottom(buildInputBar());
-
-        addMessage("User", "你好");
-        addMessage("AI", "你好啊，我是界面演示用的助手。");
     }
 
     private ScrollPane buildHistory() {

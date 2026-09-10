@@ -1,9 +1,9 @@
-package org.example.magua.service.dialogue;
+package org.example.magua.message;
 
-import org.example.magua.service.message.*;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -42,7 +42,7 @@ public class MessageContext {
             }
             Files.writeString(filePath, line + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
     }
-    public void loadFile() throws Exception {
+    public void loadFile() throws IOException {
         if (!Files.exists(filePath)) {
             return;
         }

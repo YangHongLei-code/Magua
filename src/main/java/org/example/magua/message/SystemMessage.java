@@ -1,4 +1,4 @@
-package org.example.magua.service.message;
+package org.example.magua.message;
 
 import lombok.Data;
 
