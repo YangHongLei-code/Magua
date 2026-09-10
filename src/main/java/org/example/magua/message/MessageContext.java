@@ -25,7 +25,7 @@ public class MessageContext {
         this.filePath=filePath;
     }
 
-    public void addMessage(AgentMessage message)throws Exception {
+    public void addMessage(AgentMessage message) throws IOException {
         messages.add(message);
         appendLine(message);
     }
@@ -34,7 +34,7 @@ public class MessageContext {
         return messages;
     }
 
-    private void appendLine(AgentMessage message)throws Exception  {
+    private void appendLine(AgentMessage message) throws IOException {
             String line =jsonMapper.writeValueAsString(message);
             Path parent = filePath.getParent();
             if (parent != null) {

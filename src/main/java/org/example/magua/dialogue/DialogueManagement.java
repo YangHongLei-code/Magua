@@ -5,6 +5,7 @@ import org.example.magua.util.AppHome;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
  * @Description: TODO
  */
 public class DialogueManagement {
-    private Map<String, MessageContext> messageContextMap;
+    private Map<String, MessageContext> messageContextMap=new HashMap<String, MessageContext>();
 
     public String newDialogue() {
         String dialogueId= UUID.randomUUID().toString();
