@@ -27,6 +27,10 @@ public class Config {
     private String apiKey;
     private String apiUrl;
     private String model;
+    private boolean stream=true;
+    private boolean streamOptions=true;
+    private String thinking="enabled";
+    private String reasoningEffort="high";
 
     private static final Path FILE_PATH = AppHome.resolve().resolve("magua.yml");
     private static final Yaml YAML = new Yaml();
