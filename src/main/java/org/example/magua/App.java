@@ -6,7 +6,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.example.magua.config.Config;
 import org.example.magua.ui.MainLayout;
-import org.example.magua.util.AppHome;
 
 public class App extends Application {
 

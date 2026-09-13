@@ -1,5 +1,6 @@
 package org.example.magua.ui;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -10,14 +11,26 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.example.magua.dialogue.DialogueManagement;
+import org.example.magua.dialogue.DialogueService;
+import org.example.magua.dialogue.DialogueStreamHandler;
+import org.example.magua.dialogue.entity.MessageVo;
 
 /**
- * AI 聊天主界面（仅界面；发送仅打印控制台）。
+ * AI 聊天主界面：发送消息并流式显示回复。
  */
 public class ChatPanel {
 
-    private BorderPane root = new BorderPane();
-    private VBox historyBox = new VBox(10);
+    private final BorderPane root = new BorderPane();
+    private final VBox historyBox = new VBox(10);
+    private final DialogueService dialogueService = new DialogueService();
+    private final String dialogueId = DialogueManagement.getInstance().newDialogue();
+
+    private TextArea input;
+    private Button sendButton;
+    private ScrollPane scrollPane;
+    private Label currentAssistantBody;
+    private boolean waiting;
 
     public ChatPanel() {
         root.setCenter(buildHistory());
@@ -27,7 +40,7 @@ public class ChatPanel {
     private ScrollPane buildHistory() {
         historyBox.setPadding(new Insets(12));
 
-        ScrollPane scrollPane = new ScrollPane(historyBox);
+        scrollPane = new ScrollPane(historyBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
@@ -35,21 +48,14 @@ public class ChatPanel {
     }
 
     private HBox buildInputBar() {
-        TextArea input = new TextArea();
+        input = new TextArea();
         input.setPromptText("输入消息...");
         input.setPrefRowCount(2);
         input.setWrapText(true);
         HBox.setHgrow(input, Priority.ALWAYS);
 
-        Button sendButton = new Button("发送");
-        sendButton.setOnAction(e -> {
-            String text = input.getText() == null ? "" : input.getText().trim();
-            System.out.println("用户点击了发送按钮" + (text.isEmpty() ? "" : "，内容：" + text));
-            if (!text.isEmpty()) {
-                addMessage("User", text);
-                input.clear();
-            }
-        });
+        sendButton = new Button("发送");
+        sendButton.setOnAction(e -> sendMessage());
 
         HBox bar = new HBox(8, input, sendButton);
         bar.setAlignment(Pos.CENTER_LEFT);
@@ -57,7 +63,73 @@ public class ChatPanel {
         return bar;
     }
 
-    private void addMessage(String role, String content) {
+    private void sendMessage() {
+        if (waiting) {
+            return;
+        }
+        String text = input.getText() == null ? "" : input.getText().trim();
+        if (text.isEmpty()) {
+            return;
+        }
+
+        addMessage("User", text);
+        input.clear();
+        setWaiting(true);
+        currentAssistantBody = addMessage("Assistant", "");
+
+        dialogueService.streamAsk(dialogueId, text, new DialogueStreamHandler() {
+            @Override
+            public void onChunk(MessageVo m) {
+                Platform.runLater(() -> handleChunk(m));
+            }
+
+            @Override
+            public void onComplete() {
+                Platform.runLater(() -> setWaiting(false));
+            }
+
+            @Override
+            public void onError(String s, Throwable t) {
+                Platform.runLater(() -> {
+                    if (currentAssistantBody != null) {
+                        String existing = currentAssistantBody.getText();
+                        currentAssistantBody.setText(
+                                (existing == null || existing.isEmpty() ? "" : existing + "\n") + "[错误] " + s
+                        );
+                    } else {
+                        addMessage("Error", s);
+                    }
+                    setWaiting(false);
+                });
+            }
+        });
+    }
+
+    private void handleChunk(MessageVo m) {
+        if (m == null || m.getType() == null) {
+            return;
+        }
+        switch (m.getType()) {
+            case "content" -> {
+                if (currentAssistantBody != null && m.getData() != null) {
+                    currentAssistantBody.setText(currentAssistantBody.getText() + m.getData());
+                    scrollToBottom();
+                }
+            }
+            case "done" -> setWaiting(false);
+            default -> {
+                // reasoning / usage / tool_* 等先不展示
+            }
+        }
+    }
+
+    private void setWaiting(boolean waiting) {
+        this.waiting = waiting;
+        sendButton.setDisable(waiting);
+        input.setDisable(waiting);
+    }
+
+    private Label addMessage(String role, String content) {
         Label roleLabel = new Label(role);
         Label body = new Label(content);
         body.setWrapText(true);
@@ -65,6 +137,12 @@ public class ChatPanel {
 
         VBox bubble = new VBox(4, roleLabel, body);
         historyBox.getChildren().add(bubble);
+        scrollToBottom();
+        return body;
+    }
+
+    private void scrollToBottom() {
+        Platform.runLater(() -> scrollPane.setVvalue(1.0));
     }
 
     public BorderPane getView() {
