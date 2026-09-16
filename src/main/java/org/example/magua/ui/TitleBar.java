@@ -44,6 +44,17 @@ public class TitleBar {
         HBox.setHgrow(dragArea, Priority.ALWAYS);
         enableWindowDrag(dragArea);
 
+        Button configButton = new Button("⚙");
+        configButton.setFocusTraversable(false);
+        configButton.setStyle(
+                "-fx-background-color: transparent; -fx-text-fill: #666; -fx-cursor: hand;"
+                        + "-fx-font-size: 16px; -fx-padding: 4 10;"
+        );
+        configButton.setOnAction(e -> {
+            System.out.println("用户点击了配置按钮");
+            new ConfigDialog().show(stage);
+        });
+
         maximizeButton = createWindowButton("□");
         maximizeButton.setOnAction(e -> toggleMaximize());
 
@@ -59,7 +70,7 @@ public class TitleBar {
             stage.close();
         });
 
-        HBox windowControls = new HBox(minimizeButton, maximizeButton, closeButton);
+        HBox windowControls = new HBox(configButton, minimizeButton, maximizeButton, closeButton);
         windowControls.setAlignment(Pos.CENTER_RIGHT);
 
         root.getChildren().addAll(titleBox, dragArea, windowControls);

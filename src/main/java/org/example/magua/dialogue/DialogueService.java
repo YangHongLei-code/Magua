@@ -40,13 +40,16 @@ public class DialogueService {
         body.put("tools", toolRegistry.allToolSchemas());
         body.put("thinking", Map.of("type", config.getThinking()));
         body.put("stream", config.isStream());
-        body.put("stream_options", Map.of("include_usage", true));
+        body.put("stream_options", Map.of("include_usage", config.isStreamOptions()));
         body.put("reasoning_effort", config.getReasoningEffort());
+        body.put("temperature", config.getTemperature());
+        body.put("top_p", config.getTopP());
+
         RequestBody requestBody = RequestBody.create(jsonMapper.writeValueAsString(body), MediaType.parse("application/json; charset=utf-8"));
         Request request = new Request.Builder()
                 .url(config.getApiUrl())
                 .post(requestBody)
-                .header("Authorization", "Bearer " + config.getApiKey())
+                .header("Authorization", "Bearer " + config.getApiKeyVal())
                 .header("Accept", "text/event-stream")
                 .build();
         return request;

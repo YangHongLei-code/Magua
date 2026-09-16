@@ -47,6 +47,7 @@ public class ResultListener extends EventSourceListener {
                         messageContext.addMessage(toolMessage);
                     }
                     eventSource.cancel();
+                    handler.onChunk(new MessageVo("done", "工具调用完毕。"));
                     streamOneRound.run();
                 } else {
                     messageContext.addMessage(new AssistantMessage(contentSb.toString()));

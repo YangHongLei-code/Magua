@@ -13,7 +13,7 @@ public class App extends Application {
     public void start(Stage primaryStage) {
         primaryStage.initStyle(StageStyle.UNDECORATED);
 
-        MainLayout mainLayout = new MainLayout();
+        MainLayout mainLayout = new MainLayout(primaryStage);
         Scene scene = new Scene(mainLayout.getView(), 1280, 800);
 
         primaryStage.setScene(scene);
