@@ -1,0 +1,133 @@
+/* IDEA Light：深色加粗字，优先中文字体以便 Linux 字重生效 */
+
+.root {
+    -fx-font-family: "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2B2B;
+}
+
+.label {
+    -fx-text-fill: #2B2B2B;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.button {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2B2B2B;
+}
+
+.text-field, .password-field, .text-area {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 3;
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 3;
+    -fx-border-width: 1;
+    -fx-padding: 6 8;
+    -fx-font-family: "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2B2B;
+}
+
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: #2F6FED;
+}
+
+.text-input:disabled, .text-field:disabled, .password-field:disabled {
+    -fx-opacity: 0.9;
+    -fx-background-color: #F5F5F5;
+    -fx-text-fill: #2B2B2B;
+}
+
+.check-box {
+    -fx-text-fill: #2B2B2B;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.check-box .box {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 2;
+    -fx-background-radius: 2;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #2F6FED;
+}
+
+.combo-box,
+.combo-box:editable {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 3;
+    -fx-border-color: #BDBDBD;
+    -fx-border-radius: 3;
+    -fx-border-width: 1;
+    -fx-padding: 0;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.combo-box:focused,
+.combo-box:editable:focused {
+    -fx-border-color: #2F6FED;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-padding: 0 8 0 4;
+}
+
+.combo-box .arrow-button:hover {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #2B2B2B;
+    -fx-padding: 3 4 3 4;
+    -fx-shape: "M0,0 L5,5 L10,0 Z";
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5 8;
+    -fx-font-family: "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2B2B;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #BDBDBD;
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #CDE0F8;
+    -fx-text-fill: #2B2B2B;
+}
+
+.combo-box .text-input,
+.combo-box:editable > .text-field {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 6 4 6 8;
+    -fx-font-family: "Noto Sans CJK SC", "WenQuanYi Micro Hei", "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2B2B2B;
+}
+
+.list-view .list-cell {
+    -fx-text-fill: #2B2B2B;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
