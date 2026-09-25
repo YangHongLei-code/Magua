@@ -9,8 +9,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -23,18 +25,18 @@ import org.example.magua.config.Config;
  */
 public class ConfigDialog {
 
-    private Config config = Config.getInstance();
+    private final Config config = Config.getInstance();
 
-    private TextField apiKeyField = new TextField();
-    private PasswordField apiKeyValField = new PasswordField();
-    private TextField apiUrlField = new TextField();
-    private TextField modelField = new TextField();
-    private CheckBox streamBox = new CheckBox("流式输出 (stream)");
-    private CheckBox streamOptionsBox = new CheckBox("返回 usage (stream_options)");
-    private ComboBox<String> thinkingBox = new ComboBox<>();
-    private ComboBox<String> reasoningEffortBox = new ComboBox<>();
-    private TextField temperatureField = new TextField();
-    private TextField topPField = new TextField();
+    private final TextField apiKeyField = new TextField();
+    private final PasswordField apiKeyValField = new PasswordField();
+    private final TextField apiUrlField = new TextField();
+    private final TextField modelField = new TextField();
+    private final CheckBox streamBox = new CheckBox("流式输出 (stream)");
+    private final CheckBox streamOptionsBox = new CheckBox("返回 usage (stream_options)");
+    private final ComboBox<String> thinkingBox = new ComboBox<>();
+    private final ComboBox<String> reasoningEffortBox = new ComboBox<>();
+    private final TextField temperatureField = new TextField();
+    private final TextField topPField = new TextField();
 
     private Stage stage;
 
@@ -42,55 +44,67 @@ public class ConfigDialog {
         loadFromConfig();
 
         GridPane grid = new GridPane();
-        grid.setHgap(12);
-        grid.setVgap(12);
-        grid.setPadding(new Insets(16));
+        grid.setHgap(14);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(18, 20, 8, 20));
+
+        ColumnConstraints c0 = new ColumnConstraints();
+        c0.setMinWidth(88);
+        ColumnConstraints c1 = new ColumnConstraints();
+        c1.setHgrow(Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(c0, c1);
 
         int row = 0;
-        grid.add(new Label("API Key:"), 0, row);
-        apiKeyField.setPrefWidth(360);
+        grid.add(formLabel("API Key"), 0, row);
+        apiKeyField.setMaxWidth(Double.MAX_VALUE);
         apiKeyField.setPromptText("${DEEPSEEK_API_KEY} 或直接填密钥");
         grid.add(apiKeyField, 1, row);
 
-        grid.add(new Label("解析后密钥:"), 0, ++row);
+        grid.add(formLabel("解析后密钥"), 0, ++row);
         apiKeyValField.setEditable(false);
         apiKeyValField.setDisable(true);
+        apiKeyValField.setMaxWidth(Double.MAX_VALUE);
         grid.add(apiKeyValField, 1, row);
 
         Label apiKeyHint = new Label("支持 ${环境变量名}，或直接填写真实 key");
-        apiKeyHint.setStyle("-fx-text-fill: #888; -fx-font-size: 11px;");
+        apiKeyHint.setStyle(UiTheme.label(13));
         grid.add(apiKeyHint, 1, ++row);
 
-        grid.add(new Label("API URL:"), 0, ++row);
+        grid.add(formLabel("API URL"), 0, ++row);
+        apiUrlField.setMaxWidth(Double.MAX_VALUE);
         grid.add(apiUrlField, 1, row);
 
-        grid.add(new Label("模型:"), 0, ++row);
+        grid.add(formLabel("模型"), 0, ++row);
+        modelField.setMaxWidth(Double.MAX_VALUE);
         grid.add(modelField, 1, row);
 
         grid.add(streamBox, 1, ++row);
         grid.add(streamOptionsBox, 1, ++row);
 
-        grid.add(new Label("思考模式:"), 0, ++row);
+        grid.add(formLabel("思考模式"), 0, ++row);
         thinkingBox.getItems().setAll("enabled", "disabled");
         thinkingBox.setEditable(true);
+        thinkingBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(thinkingBox, Priority.ALWAYS);
         grid.add(thinkingBox, 1, row);
 
-        grid.add(new Label("思考强度:"), 0, ++row);
+        grid.add(formLabel("思考强度"), 0, ++row);
         reasoningEffortBox.getItems().setAll("none", "low", "high", "max", "minimal", "medium", "xhigh");
         reasoningEffortBox.setEditable(true);
+        reasoningEffortBox.setMaxWidth(Double.MAX_VALUE);
+        GridPane.setHgrow(reasoningEffortBox, Priority.ALWAYS);
         grid.add(reasoningEffortBox, 1, row);
 
-        grid.add(new Label("temperature:"), 0, ++row);
+        grid.add(formLabel("temperature"), 0, ++row);
+        temperatureField.setMaxWidth(Double.MAX_VALUE);
         grid.add(temperatureField, 1, row);
 
-        grid.add(new Label("top_p:"), 0, ++row);
+        grid.add(formLabel("top_p"), 0, ++row);
+        topPField.setMaxWidth(Double.MAX_VALUE);
         grid.add(topPField, 1, row);
 
         Button saveBtn = new Button("保存");
-        saveBtn.setStyle(
-                "-fx-background-color: #43a047; -fx-text-fill: white; -fx-background-radius: 6;"
-                        + "-fx-padding: 8 20; -fx-cursor: hand;"
-        );
+        saveBtn.setStyle(UiTheme.primaryButton());
         saveBtn.setOnAction(e -> {
             if (saveToConfig()) {
                 System.out.println("用户保存了配置");
@@ -100,28 +114,41 @@ public class ConfigDialog {
 
         Button cancelBtn = new Button("取消");
         cancelBtn.setStyle(
-                "-fx-background-color: #e0e0e0; -fx-text-fill: #333; -fx-background-radius: 6;"
-                        + "-fx-padding: 8 20; -fx-cursor: hand;"
+                "-fx-background-color: " + UiTheme.HOVER + "; -fx-text-fill: " + UiTheme.TEXT
+                        + "; -fx-background-radius: 4; -fx-padding: 6 14; -fx-cursor: hand; -fx-font-size: 12px;"
+                        + "-fx-border-color: " + UiTheme.BORDER + "; -fx-border-radius: 4;"
         );
         cancelBtn.setOnAction(e -> {
             System.out.println("用户取消了配置");
             stage.close();
         });
 
-        HBox buttons = new HBox(10, saveBtn, cancelBtn);
+        HBox buttons = new HBox(8, saveBtn, cancelBtn);
         buttons.setAlignment(Pos.CENTER_RIGHT);
-        buttons.setPadding(new Insets(0, 16, 16, 16));
+        buttons.setPadding(new Insets(12, 20, 16, 20));
 
         VBox root = new VBox(grid, buttons);
-        root.setStyle("-fx-background-color: white;");
+        root.setStyle("-fx-background-color: " + UiTheme.BG + ";");
+
+        Scene scene = new Scene(root, 560, 520);
+        var css = getClass().getResource("/org/example/magua/ui/workbench.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
 
         stage = new Stage();
         stage.initOwner(owner);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("模型配置");
-        stage.setScene(new Scene(root, 560, 520));
+        stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+    }
+
+    private Label formLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle(UiTheme.label(14));
+        return label;
     }
 
     private void loadFromConfig() {
@@ -148,7 +175,6 @@ public class ConfigDialog {
             config.setReasoningEffort(reasoningEffortBox.getValue());
             config.setTemperature(Double.parseDouble(temperatureField.getText().trim()));
             config.setTopP(Double.parseDouble(topPField.getText().trim()));
-            // apiKeyVal 由 Config.save()/加载逻辑解析，弹窗不直接写
             config.save();
             return true;
         } catch (NumberFormatException e) {

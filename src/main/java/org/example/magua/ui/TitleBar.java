@@ -3,6 +3,7 @@ package org.example.magua.ui;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseButton;
@@ -10,12 +11,19 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 /**
  * 自定义标题栏：标题 + 最小化 / 最大化 / 关闭。
  */
 public class TitleBar {
+
+    private static final Color ICON_COLOR = Color.web(UiTheme.TEXT);
+    private static final double ICON_STROKE = 1.8;
 
     private double resizeMargin = 6;
 
@@ -31,13 +39,16 @@ public class TitleBar {
     public TitleBar(Stage stage) {
         this.stage = stage;
         root.setAlignment(Pos.CENTER_LEFT);
+        root.setPrefHeight(36);
+        root.setStyle(UiTheme.titleBar());
 
-        Label title = new Label("Maguan");
+        Label title = new Label("Magua");
+        title.setStyle(UiTheme.label(15));
         title.setMouseTransparent(true);
 
         HBox titleBox = new HBox(title);
         titleBox.setAlignment(Pos.CENTER_LEFT);
-        titleBox.setPadding(new Insets(0, 12, 0, 10));
+        titleBox.setPadding(new Insets(0, 12, 0, 12));
         enableWindowDrag(titleBox);
 
         Region dragArea = new Region();
@@ -46,32 +57,30 @@ public class TitleBar {
 
         Button configButton = new Button("⚙");
         configButton.setFocusTraversable(false);
-        configButton.setStyle(
-                "-fx-background-color: transparent; -fx-text-fill: #666; -fx-cursor: hand;"
-                        + "-fx-font-size: 16px; -fx-padding: 4 10;"
-        );
+        configButton.setStyle(UiTheme.ghostButton());
         configButton.setOnAction(e -> {
             System.out.println("用户点击了配置按钮");
             new ConfigDialog().show(stage);
         });
 
-        maximizeButton = createWindowButton("□");
+        maximizeButton = createIconButton(maximizeIcon(false));
         maximizeButton.setOnAction(e -> toggleMaximize());
 
-        Button minimizeButton = createWindowButton("─");
+        Button minimizeButton = createIconButton(minimizeIcon());
         minimizeButton.setOnAction(e -> {
             System.out.println("用户点击了最小化按钮");
             stage.setIconified(true);
         });
 
-        Button closeButton = createWindowButton("×");
+        Button closeButton = createIconButton(closeIcon());
         closeButton.setOnAction(e -> {
             System.out.println("用户点击了关闭窗口按钮");
             stage.close();
         });
 
-        HBox windowControls = new HBox(configButton, minimizeButton, maximizeButton, closeButton);
+        HBox windowControls = new HBox(2, configButton, minimizeButton, maximizeButton, closeButton);
         windowControls.setAlignment(Pos.CENTER_RIGHT);
+        windowControls.setPadding(new Insets(0, 4, 0, 0));
 
         root.getChildren().addAll(titleBox, dragArea, windowControls);
 
@@ -79,10 +88,72 @@ public class TitleBar {
         updateMaximizeIcon(stage.isMaximized());
     }
 
-    private Button createWindowButton(String text) {
-        Button button = new Button(text);
+    private Button createIconButton(Node icon) {
+        Button button = new Button();
+        button.setGraphic(icon);
         button.setFocusTraversable(false);
+        button.setStyle(UiTheme.ghostButton() + "-fx-padding: 6 10;");
         return button;
+    }
+
+    private Node minimizeIcon() {
+        Line line = new Line(0, 0, 11, 0);
+        line.setStroke(ICON_COLOR);
+        line.setStrokeWidth(ICON_STROKE);
+        line.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        StackPane box = new StackPane(line);
+        box.setMinSize(14, 14);
+        box.setMaxSize(14, 14);
+        box.setMouseTransparent(true);
+        return box;
+    }
+
+    private Node maximizeIcon(boolean restored) {
+        StackPane box = new StackPane();
+        box.setMinSize(14, 14);
+        box.setMaxSize(14, 14);
+        box.setMouseTransparent(true);
+        if (restored) {
+            Rectangle back = new Rectangle(8, 8);
+            back.setFill(Color.TRANSPARENT);
+            back.setStroke(ICON_COLOR);
+            back.setStrokeWidth(ICON_STROKE);
+            StackPane.setAlignment(back, Pos.TOP_RIGHT);
+            back.setTranslateX(1);
+            back.setTranslateY(-1);
+
+            Rectangle front = new Rectangle(8, 8);
+            front.setFill(Color.web(UiTheme.TOOL_BG));
+            front.setStroke(ICON_COLOR);
+            front.setStrokeWidth(ICON_STROKE);
+            StackPane.setAlignment(front, Pos.BOTTOM_LEFT);
+            front.setTranslateX(-1);
+            front.setTranslateY(1);
+
+            box.getChildren().addAll(back, front);
+        } else {
+            Rectangle square = new Rectangle(11, 11);
+            square.setFill(Color.TRANSPARENT);
+            square.setStroke(ICON_COLOR);
+            square.setStrokeWidth(ICON_STROKE);
+            box.getChildren().add(square);
+        }
+        return box;
+    }
+
+    private Node closeIcon() {
+        Line a = new Line(0, 0, 10, 10);
+        Line b = new Line(10, 0, 0, 10);
+        for (Line line : new Line[]{a, b}) {
+            line.setStroke(ICON_COLOR);
+            line.setStrokeWidth(ICON_STROKE);
+            line.setStrokeLineCap(javafx.scene.shape.StrokeLineCap.ROUND);
+        }
+        StackPane box = new StackPane(a, b);
+        box.setMinSize(14, 14);
+        box.setMaxSize(14, 14);
+        box.setMouseTransparent(true);
+        return box;
     }
 
     private void toggleMaximize() {
@@ -92,7 +163,7 @@ public class TitleBar {
     }
 
     private void updateMaximizeIcon(boolean maximized) {
-        maximizeButton.setText(maximized ? "❐" : "□");
+        maximizeButton.setGraphic(maximizeIcon(maximized));
     }
 
     private void enableWindowDrag(Region region) {

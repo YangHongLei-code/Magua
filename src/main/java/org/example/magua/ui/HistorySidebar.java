@@ -34,16 +34,13 @@ public class HistorySidebar {
     private Consumer<String> onDelete;
 
     public HistorySidebar() {
-        root.setPrefWidth(260);
-        root.setMinWidth(220);
-        root.setStyle("-fx-background-color: #f7f7f7; -fx-border-color: #e8e8e8; -fx-border-width: 0 1 0 0;");
+        root.setPrefWidth(250);
+        root.setMinWidth(200);
+        root.setStyle(UiTheme.toolWindow());
 
-        Button newChatBtn = new Button("+ 新对话");
+        Button newChatBtn = new Button("＋ 新对话");
         newChatBtn.setMaxWidth(Double.MAX_VALUE);
-        newChatBtn.setStyle(
-                "-fx-background-color: #43a047; -fx-text-fill: white; -fx-font-size: 14px;"
-                        + "-fx-background-radius: 8; -fx-padding: 10 12; -fx-cursor: hand;"
-        );
+        newChatBtn.setStyle(UiTheme.primaryButton());
         newChatBtn.setOnAction(e -> {
             if (onCreate != null) {
                 onCreate.run();
@@ -51,10 +48,11 @@ public class HistorySidebar {
         });
 
         VBox top = new VBox(newChatBtn);
-        top.setPadding(new Insets(12));
+        top.setPadding(new Insets(10, 10, 8, 10));
         root.setTop(top);
 
-        listView.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+        listView.setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-control-inner-background: " + UiTheme.TOOL_BG + ";");
+        listView.setFixedCellSize(52);
         listView.setCellFactory(lv -> new DialogueCell());
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldItem, item) -> {
             if (item != null && onSelect != null) {
@@ -154,24 +152,22 @@ public class HistorySidebar {
             }
 
             Label title = new Label(item.title == null ? "新对话" : item.title);
-            title.setStyle("-fx-font-size: 13px; -fx-text-fill: #222;");
+            title.setStyle(UiTheme.label(14));
             title.setTextOverrun(OverrunStyle.ELLIPSIS);
-            title.setMaxWidth(180);
+            title.setMaxWidth(170);
 
             Label time = new Label(item.timeText == null ? "" : item.timeText);
-            time.setStyle("-fx-font-size: 11px; -fx-text-fill: #999;");
+            time.setStyle(UiTheme.label(12));
 
-            VBox texts = new VBox(4, title, time);
+            VBox texts = new VBox(2, title, time);
             if (item.status != null && !item.status.isBlank()) {
                 Label status = new Label(item.status);
-                status.setStyle("-fx-font-size: 11px; -fx-text-fill: #43a047;");
+                status.setStyle(UiTheme.label(12) + "-fx-text-fill: " + UiTheme.ACCENT + ";");
                 texts.getChildren().add(status);
             }
 
-            Button deleteBtn = new Button("🗑");
-            deleteBtn.setStyle(
-                    "-fx-background-color: transparent; -fx-text-fill: #e53935; -fx-cursor: hand; -fx-padding: 2 4;"
-            );
+            Button deleteBtn = new Button("×");
+            deleteBtn.setStyle(UiTheme.ghostButton() + "-fx-text-fill: " + UiTheme.TEXT_MUTED + "; -fx-padding: 0 4;");
             deleteBtn.setOnAction(e -> {
                 if (onDelete != null) {
                     onDelete.accept(item.id);
@@ -181,17 +177,16 @@ public class HistorySidebar {
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            HBox row = new HBox(8, texts, spacer, deleteBtn);
+            HBox row = new HBox(6, texts, spacer, deleteBtn);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.setPadding(new Insets(10, 12, 10, 12));
+            row.setPadding(new Insets(8, 10, 8, 10));
             row.setStyle(isSelected()
-                    ? "-fx-background-color: #ebebeb; -fx-background-radius: 8;"
-                    : "-fx-background-color: transparent; -fx-background-radius: 8;"
-            );
+                    ? "-fx-background-color: " + UiTheme.SELECTION + "; -fx-background-radius: 0;"
+                    : "-fx-background-color: transparent;");
 
             setGraphic(row);
             setText(null);
-            setStyle("-fx-background-color: transparent; -fx-padding: 4 8;");
+            setStyle("-fx-background-color: transparent; -fx-padding: 0 0;");
         }
     }
 

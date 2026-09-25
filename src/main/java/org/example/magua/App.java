@@ -15,6 +15,10 @@ public class App extends Application {
 
         MainLayout mainLayout = new MainLayout(primaryStage);
         Scene scene = new Scene(mainLayout.getView(), 1280, 800);
+        var css = App.class.getResource("/org/example/magua/ui/workbench.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
 
         primaryStage.setScene(scene);
         primaryStage.setTitle("Maguan");

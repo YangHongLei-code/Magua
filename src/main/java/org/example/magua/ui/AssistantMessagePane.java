@@ -25,17 +25,15 @@ public class AssistantMessagePane {
     public AssistantMessagePane() {
         root.setFillWidth(true);
         root.setMaxWidth(Double.MAX_VALUE);
-        root.setPadding(new Insets(12));
+        root.setPadding(new Insets(10));
         root.setStyle(
-                "-fx-background-color: white; -fx-background-radius: 10;"
-                        + "-fx-border-color: #e6e6e6; -fx-border-radius: 10; -fx-border-width: 1;"
+                "-fx-background-color: " + UiTheme.ASSISTANT_BG + "; -fx-background-radius: 3;"
+                        + "-fx-border-color: " + UiTheme.BORDER_SOFT + "; -fx-border-radius: 3; -fx-border-width: 1;"
         );
 
         Label role = new Label("助手");
-        role.setStyle(
-                "-fx-background-color: #f0f0f0; -fx-text-fill: #666; -fx-background-radius: 4;"
-                        + "-fx-padding: 2 8; -fx-font-size: 12px;"
-        );
+        role.setStyle(UiTheme.label(13)
+                + "-fx-background-color: " + UiTheme.HOVER + "; -fx-background-radius: 2; -fx-padding: 2 8;");
 
         root.getChildren().addAll(role, roundsBox);
         ensureRound();
@@ -144,7 +142,7 @@ public class AssistantMessagePane {
 
         private RoundBlock(int index) {
             roundTitle = new Label("第 " + index + " 轮");
-            roundTitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #666; -fx-font-weight: bold;");
+            roundTitle.setStyle(UiTheme.label(13));
 
             // 深度思考
             VBox thinkingContent = new VBox(reasoningView.getView());
@@ -153,13 +151,13 @@ public class AssistantMessagePane {
             thinkingPane = new TitledPane("深度思考", thinkingContent);
             thinkingPane.setExpanded(false);
             thinkingPane.setAnimated(true);
-            thinkingPane.setStyle("-fx-font-size: 13px;");
+            thinkingPane.setStyle(UiTheme.label(14));
             thinkingPane.setVisible(false);
             thinkingPane.setManaged(false);
 
             // 正文（最终回答）
             contentTitle.setText("最终回答");
-            contentTitle.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333;");
+            contentTitle.setStyle(UiTheme.label(14));
             contentTitle.setVisible(false);
             contentTitle.setManaged(false);
 
@@ -168,19 +166,19 @@ public class AssistantMessagePane {
             contentBox.setManaged(false);
 
             // 工具
-            toolTitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #666;");
+            toolTitle.setStyle(UiTheme.label(13));
             toolTitle.setVisible(false);
             toolTitle.setManaged(false);
 
             // token
-            usageLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #999;");
+            usageLabel.setStyle(UiTheme.label(13));
             usageLabel.setVisible(false);
             usageLabel.setManaged(false);
 
-            root.setPadding(new Insets(10));
+            root.setPadding(new Insets(8));
             root.setStyle(
-                    "-fx-background-color: #fafafa; -fx-background-radius: 8;"
-                            + "-fx-border-color: #ececec; -fx-border-radius: 8;"
+                    "-fx-background-color: " + UiTheme.BG + "; -fx-background-radius: 2;"
+                            + "-fx-border-color: " + UiTheme.BORDER_SOFT + "; -fx-border-radius: 2;"
             );
             root.getChildren().addAll(roundTitle, thinkingPane, contentBox, toolTitle, toolBox, usageLabel);
         }
@@ -217,14 +215,14 @@ public class AssistantMessagePane {
             HBox row = findOrCreateToolRow(name);
             Label status = (Label) row.getChildren().get(3);
             status.setText("执行中...");
-            status.setStyle("-fx-text-fill: #fb8c00; -fx-font-size: 12px;");
+            status.setStyle(UiTheme.label(13) + "-fx-text-fill: " + UiTheme.ACCENT + ";");
         }
 
         private void toolResult(String name) {
             HBox row = findOrCreateToolRow(name);
             Label status = (Label) row.getChildren().get(3);
             status.setText("已结束");
-            status.setStyle("-fx-text-fill: #43a047; -fx-font-size: 12px;");
+            status.setStyle(UiTheme.label(13));
         }
 
         private HBox findOrCreateToolRow(String name) {
@@ -233,15 +231,15 @@ public class AssistantMessagePane {
                     return row;
                 }
             }
-            Label check = new Label("✓");
-            check.setStyle("-fx-text-fill: #43a047; -fx-font-weight: bold;");
+            Label check = new Label("·");
+            check.setStyle(UiTheme.label(16) + "-fx-text-fill: " + UiTheme.ACCENT + ";");
 
             Label nameLabel = new Label(name == null ? "tool" : name);
-            nameLabel.setStyle("-fx-text-fill: #2e7d32; -fx-font-size: 13px;");
+            nameLabel.setStyle(UiTheme.label(14));
             HBox.setHgrow(nameLabel, Priority.ALWAYS);
 
             Label status = new Label("执行中...");
-            status.setStyle("-fx-text-fill: #fb8c00; -fx-font-size: 12px;");
+            status.setStyle(UiTheme.label(13) + "-fx-text-fill: " + UiTheme.ACCENT + ";");
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -249,10 +247,10 @@ public class AssistantMessagePane {
             HBox row = new HBox(8, check, nameLabel, spacer, status);
             row.setAlignment(Pos.CENTER_LEFT);
             row.setUserData(name);
-            row.setPadding(new Insets(8, 10, 8, 10));
+            row.setPadding(new Insets(6, 8, 6, 8));
             row.setStyle(
-                    "-fx-background-color: #e8f5e9; -fx-background-radius: 6;"
-                            + "-fx-border-color: #c8e6c9; -fx-border-radius: 6;"
+                    "-fx-background-color: " + UiTheme.TOOL_ROW_BG + "; -fx-background-radius: 2;"
+                            + "-fx-border-color: " + UiTheme.BORDER_SOFT + "; -fx-border-radius: 2;"
             );
             toolBox.getChildren().add(row);
             return row;

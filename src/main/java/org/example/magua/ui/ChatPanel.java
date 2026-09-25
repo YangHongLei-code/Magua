@@ -6,18 +6,14 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import org.example.magua.dialogue.DialogueManagement;
 import org.example.magua.dialogue.DialogueService;
 import org.example.magua.dialogue.DialogueStreamHandler;
 import org.example.magua.dialogue.entity.MessageVo;
-import org.example.magua.dialogue.entity.Usage;
 import org.example.magua.message.AgentMessage;
 import org.example.magua.message.AssistantMessage;
 import org.example.magua.message.MessageContext;
@@ -32,11 +28,10 @@ import java.util.function.Consumer;
 public class ChatPanel {
 
     private BorderPane root = new BorderPane();
-    private VBox historyBox = new VBox(16);
+    private VBox historyBox = new VBox(12);
     private ScrollPane scrollPane;
-    private TextArea input;
-    private Button sendButton;
-    private Button stopButton;
+    private ChatInputView inputView;
+    private Button actionButton;
 
     private DialogueService dialogueService = new DialogueService();
     private String dialogueId;
@@ -49,7 +44,7 @@ public class ChatPanel {
     private Consumer<String> onStatusChanged;
 
     public ChatPanel() {
-        root.setStyle("-fx-background-color: #ffffff;");
+        root.setStyle(UiTheme.root());
         root.setTop(buildHeader());
         root.setCenter(buildHistory());
         root.setBottom(buildInputBar());
@@ -128,71 +123,55 @@ public class ChatPanel {
     }
 
     private VBox buildHeader() {
-        Label title = new Label("Magua");
-        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;");
+        Label title = new Label("对话");
+        title.setStyle(UiTheme.label(18));
 
-        Label subtitle = new Label("Agent 对话");
-        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #888;");
+        Label subtitle = new Label("Agent Workbench");
+        subtitle.setStyle(UiTheme.label(13));
 
         VBox header = new VBox(2, title, subtitle);
-        header.setPadding(new Insets(16, 20, 12, 20));
-        header.setStyle("-fx-border-color: #eeeeee; -fx-border-width: 0 0 1 0;");
+        header.setPadding(new Insets(10, 14, 10, 14));
+        header.setStyle("-fx-background-color: " + UiTheme.BG + "; -fx-border-color: " + UiTheme.BORDER_SOFT
+                + "; -fx-border-width: 0 0 1 0;");
         return header;
     }
 
     private ScrollPane buildHistory() {
-        historyBox.setPadding(new Insets(16, 20, 16, 20));
+        historyBox.setPadding(new Insets(12, 14, 12, 14));
         historyBox.setFillWidth(true);
+        historyBox.setSpacing(12);
 
         scrollPane = new ScrollPane(historyBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+        scrollPane.setStyle("-fx-background-color: " + UiTheme.BG + "; -fx-background: " + UiTheme.BG + ";");
         return scrollPane;
     }
 
     private VBox buildInputBar() {
-        input = new TextArea();
-        input.setPromptText("输入消息, Enter 发送, Shift+Enter 换行");
-        input.setPrefRowCount(3);
-        input.setWrapText(true);
-        input.setStyle(
-                "-fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #ddd;"
-                        + "-fx-font-size: 14px;"
-        );
-        input.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ENTER && !e.isShiftDown()) {
-                e.consume();
+        inputView = new ChatInputView();
+        inputView.setOnSend(this::sendMessage);
+
+        actionButton = new Button("发送");
+        styleActionButton(false);
+        actionButton.setOnAction(e -> {
+            if (waiting) {
+                dialogueService.stop();
+                setWaiting(false);
+                notifyStatus("");
+            } else {
                 sendMessage();
             }
         });
 
-        sendButton = new Button("发送");
-        sendButton.setStyle(
-                "-fx-background-color: #64b5f6; -fx-text-fill: white; -fx-background-radius: 8;"
-                        + "-fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;"
-        );
-        sendButton.setOnAction(e -> sendMessage());
-
-        stopButton = new Button("停止");
-        stopButton.setDisable(true);
-        stopButton.setStyle(
-                "-fx-background-color: #e53935; -fx-text-fill: white; -fx-background-radius: 8;"
-                        + "-fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;"
-        );
-        stopButton.setOnAction(e -> {
-            dialogueService.stop();
-            setWaiting(false);
-            notifyStatus("");
-        });
-
-        HBox actions = new HBox(8, stopButton, sendButton);
+        HBox actions = new HBox(actionButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
-        VBox bar = new VBox(8, input, actions);
-        bar.setPadding(new Insets(12, 20, 16, 20));
-        bar.setStyle("-fx-border-color: #eeeeee; -fx-border-width: 1 0 0 0; -fx-background-color: white;");
+        VBox bar = new VBox(8, inputView.getView(), actions);
+        bar.setPadding(new Insets(10, 14, 12, 14));
+        bar.setStyle("-fx-background-color: " + UiTheme.PANEL_BG + "; -fx-border-color: " + UiTheme.BORDER_SOFT
+                + "; -fx-border-width: 1 0 0 0;");
         return bar;
     }
 
@@ -200,7 +179,7 @@ public class ChatPanel {
         if (waiting) {
             return;
         }
-        String text = input.getText() == null ? "" : input.getText().trim();
+        String text = inputView.getText() == null ? "" : inputView.getText().trim();
         if (text.isEmpty()) {
             return;
         }
@@ -212,7 +191,7 @@ public class ChatPanel {
         }
 
         addUserBubble(text);
-        input.clear();
+        inputView.clear();
         if (onTitleChanged != null) {
             onTitleChanged.accept(dialogueId, text.length() > 40 ? text.substring(0, 40) + "…" : text);
         }
@@ -277,7 +256,6 @@ public class ChatPanel {
                 }
             }
             case "done" -> {
-                // 功能侧表示本轮工具结束、将进入下一轮
                 currentAssistant.beginNextRound();
             }
             default -> {
@@ -287,19 +265,20 @@ public class ChatPanel {
     }
 
     private void addUserBubble(String text) {
+        Label role = new Label("你");
+        role.setStyle(UiTheme.label(13));
+
         Label body = new Label(text);
         body.setWrapText(true);
-        body.setStyle("-fx-text-fill: white; -fx-font-size: 14px;");
-        body.setMaxWidth(520);
+        body.setStyle(UiTheme.label(15));
+        body.setMaxWidth(640);
 
-        VBox bubble = new VBox(body);
-        bubble.setPadding(new Insets(10, 14, 10, 14));
-        bubble.setStyle("-fx-background-color: #2e7d32; -fx-background-radius: 14;");
+        VBox bubble = new VBox(4, role, body);
+        bubble.setPadding(new Insets(8, 10, 8, 10));
+        bubble.setStyle("-fx-background-color: " + UiTheme.USER_BG + "; -fx-background-radius: 4;"
+                + "-fx-border-color: " + UiTheme.BORDER_SOFT + "; -fx-border-radius: 4; -fx-border-width: 1;");
 
-        Circle avatar = new Circle(14);
-        avatar.setStyle("-fx-fill: #cfd8dc;");
-
-        HBox row = new HBox(10, bubble, avatar);
+        HBox row = new HBox(bubble);
         row.setAlignment(Pos.TOP_RIGHT);
         historyBox.getChildren().add(row);
         scrollToBottom();
@@ -316,21 +295,23 @@ public class ChatPanel {
     private void addSystemTip(String text) {
         Label tip = new Label(text);
         tip.setWrapText(true);
-        tip.setStyle("-fx-text-fill: #999; -fx-font-size: 12px;");
+        tip.setStyle(UiTheme.label(14));
         historyBox.getChildren().add(tip);
         scrollToBottom();
     }
 
     private void setWaiting(boolean waiting) {
         this.waiting = waiting;
-        sendButton.setDisable(waiting);
-        input.setDisable(waiting);
-        stopButton.setDisable(!waiting);
-        sendButton.setText(waiting ? "发送中..." : "发送");
-        sendButton.setStyle(waiting
-                ? "-fx-background-color: #90caf9; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 18; -fx-font-size: 13px;"
-                : "-fx-background-color: #64b5f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;"
-        );
+        inputView.setEnabled(!waiting);
+        actionButton.setText(waiting ? "停止" : "发送");
+        styleActionButton(waiting);
+        if (!waiting) {
+            inputView.requestFocusInput();
+        }
+    }
+
+    private void styleActionButton(boolean stopping) {
+        actionButton.setStyle(stopping ? UiTheme.dangerButton() : UiTheme.primaryButton());
     }
 
     private void notifyStatus(String status) {

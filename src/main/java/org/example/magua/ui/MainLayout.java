@@ -24,7 +24,7 @@ public class MainLayout {
         HBox.setHgrow(chatPanel.getView(), Priority.ALWAYS);
         body.getChildren().addAll(sidebar.getView(), chatPanel.getView());
         root.setCenter(body);
-        root.setStyle("-fx-background-color: white;");
+        root.setStyle(UiTheme.root());
 
         wireEvents();
         chatPanel.newDialogue();
