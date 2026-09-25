@@ -36,6 +36,7 @@ public class ChatPanel {
     private ScrollPane scrollPane;
     private TextArea input;
     private Button sendButton;
+    private Button stopButton;
 
     private DialogueService dialogueService = new DialogueService();
     private String dialogueId;
@@ -71,6 +72,9 @@ public class ChatPanel {
     }
 
     public void newDialogue() {
+        if (waiting) {
+            dialogueService.stop();
+        }
         dialogueId = null;
         historyBox.getChildren().clear();
         currentAssistant = null;
@@ -83,7 +87,8 @@ public class ChatPanel {
             return;
         }
         if (waiting) {
-            return;
+            dialogueService.stop();
+            setWaiting(false);
         }
         dialogueId = id;
         historyBox.getChildren().clear();
@@ -170,7 +175,19 @@ public class ChatPanel {
         );
         sendButton.setOnAction(e -> sendMessage());
 
-        HBox actions = new HBox(sendButton);
+        stopButton = new Button("停止");
+        stopButton.setDisable(true);
+        stopButton.setStyle(
+                "-fx-background-color: #e53935; -fx-text-fill: white; -fx-background-radius: 8;"
+                        + "-fx-padding: 8 18; -fx-cursor: hand; -fx-font-size: 13px;"
+        );
+        stopButton.setOnAction(e -> {
+            dialogueService.stop();
+            setWaiting(false);
+            notifyStatus("");
+        });
+
+        HBox actions = new HBox(8, stopButton, sendButton);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
         VBox bar = new VBox(8, input, actions);
@@ -308,6 +325,7 @@ public class ChatPanel {
         this.waiting = waiting;
         sendButton.setDisable(waiting);
         input.setDisable(waiting);
+        stopButton.setDisable(!waiting);
         sendButton.setText(waiting ? "发送中..." : "发送");
         sendButton.setStyle(waiting
                 ? "-fx-background-color: #90caf9; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 18; -fx-font-size: 13px;"

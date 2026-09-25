@@ -5,16 +5,11 @@ import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import okhttp3.sse.EventSources;
 import org.example.magua.config.Config;
-import org.example.magua.dialogue.entity.MessageVo;
-import org.example.magua.dialogue.entity.Usage;
 import org.example.magua.message.MessageContext;
 import org.example.magua.message.UserMessage;
 import org.example.magua.tool.ToolRegistry;
-import org.jetbrains.annotations.NotNull;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-import javax.tools.DiagnosticListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,10 +24,13 @@ public class DialogueService {
     private final OkHttpClient client = new OkHttpClient.Builder()
             .readTimeout(0, TimeUnit.MILLISECONDS)  // 流式必须设 0
             .build();
-    private Config config=Config.getInstance();
-    private DialogueManagement dialogueManagement=DialogueManagement.getInstance();
+    private Config config = Config.getInstance();
+    private DialogueManagement dialogueManagement = DialogueManagement.getInstance();
     private JsonMapper jsonMapper = JsonMapper.builder().build();
-    private ToolRegistry toolRegistry=ToolRegistry.getInstance();
+    private ToolRegistry toolRegistry = ToolRegistry.getInstance();
+    private EventSource current;
+    private volatile boolean stopped;
+
     private Request buildRequest(MessageContext messageContext) {
         Map<String, Object> body = new HashMap<>();
         body.put("model", config.getModel());
@@ -46,17 +44,16 @@ public class DialogueService {
         body.put("top_p", config.getTopP());
 
         RequestBody requestBody = RequestBody.create(jsonMapper.writeValueAsString(body), MediaType.parse("application/json; charset=utf-8"));
-        Request request = new Request.Builder()
+        return new Request.Builder()
                 .url(config.getApiUrl())
                 .post(requestBody)
                 .header("Authorization", "Bearer " + config.getApiKeyVal())
                 .header("Accept", "text/event-stream")
                 .build();
-        return request;
     }
 
-
     public void streamAsk(String dialogueId, String userMessage, DialogueStreamHandler handler) {
+        stopped = false;
         MessageContext messageContext;
         try {
             messageContext = dialogueManagement.getDialogue(dialogueId);
@@ -65,14 +62,27 @@ public class DialogueService {
             handler.onError("未找到对话！", e);
             return;
         }
-        streamOneRound(messageContext,handler);
+        streamOneRound(messageContext, handler);
     }
 
     private void streamOneRound(MessageContext messageContext, DialogueStreamHandler handler) {
-        EventSourceListener listener = new ResultListener(messageContext,handler,() -> streamOneRound(messageContext,handler));
-        EventSources.createFactory(client).newEventSource(buildRequest(messageContext), listener);
+        if (stopped) {
+            return;
+        }
+        EventSourceListener listener = new DialogueListener(
+                messageContext,
+                handler,
+                () -> streamOneRound(messageContext, handler),
+                () -> stopped
+        );
+        current = EventSources.createFactory(client).newEventSource(buildRequest(messageContext), listener);
     }
-
-
+    public void stop() {
+        stopped = true;
+        if (current != null) {
+            current.cancel();
+            current = null;
+        }
+    }
 
 }

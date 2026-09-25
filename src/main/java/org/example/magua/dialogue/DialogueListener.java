@@ -1,7 +1,6 @@
 package org.example.magua.dialogue;
 
 import okhttp3.Response;
-
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import org.example.magua.dialogue.entity.MessageVo;
@@ -17,27 +16,34 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
-public class ResultListener extends EventSourceListener {
-    private JsonMapper jsonMapper = JsonMapper.builder().build();
-    private StringBuilder reasoningSb = new StringBuilder();
-    private StringBuilder contentSb = new StringBuilder();
-    private ToolCalls toolCalls=new ToolCalls();
+public class DialogueListener extends EventSourceListener {
+    private final JsonMapper jsonMapper = JsonMapper.builder().build();
+    private final StringBuilder reasoningSb = new StringBuilder();
+    private final StringBuilder contentSb = new StringBuilder();
+    private final ToolCalls toolCalls = new ToolCalls();
 
-    private  DialogueStreamHandler handler;
-    private MessageContext messageContext;
-    private Runnable streamOneRound;
-    public ResultListener(MessageContext messageContext, DialogueStreamHandler handler,Runnable streamOneRound) {
+    private final DialogueStreamHandler handler;
+    private final MessageContext messageContext;
+    private final Runnable streamOneRound;
+    private final BooleanSupplier stopped;
+
+    public DialogueListener(MessageContext messageContext,
+                            DialogueStreamHandler handler,
+                            Runnable streamOneRound,
+                            BooleanSupplier stopped) {
         this.handler = handler;
-        this.messageContext=messageContext;
+        this.messageContext = messageContext;
         this.streamOneRound = streamOneRound;
+        this.stopped = stopped;
     }
-
-
 
     @Override
     public void onEvent(@NotNull EventSource eventSource, @Nullable String id, @Nullable String type, @NotNull String data) {
-
+        if (stopped.getAsBoolean()) {
+            return;
+        }
         try {
             if ("[DONE]".equals(data)) {
                 if (toolCalls.hasTools()) {
@@ -48,7 +54,9 @@ public class ResultListener extends EventSourceListener {
                     }
                     eventSource.cancel();
                     handler.onChunk(new MessageVo("done", "工具调用完毕。"));
-                    streamOneRound.run();
+                    if (!stopped.getAsBoolean()) {
+                        streamOneRound.run();
+                    }
                 } else {
                     messageContext.addMessage(new AssistantMessage(contentSb.toString()));
                     handler.onComplete();
@@ -82,18 +90,40 @@ public class ResultListener extends EventSourceListener {
                 Usage usageData = jsonMapper.treeToValue(usage, Usage.class);
                 handler.onChunk(new MessageVo("usage", usageData));
             }
-        }catch (Exception e) {
-           throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public void onFailure(@NotNull EventSource eventSource, @Nullable Throwable t, @Nullable Response response) {
-
+        // 用户停止 / 主动 cancel：不写半截、不回调；UI 停止按钮已自行收尾
+        if (stopped.getAsBoolean() || isCanceled(t)) {
+            return;
+        }
+        String detail = t != null ? t.getMessage() : "unknown";
+        if (response != null) {
+            detail = "HTTP " + response.code() + ": " + detail;
+            try {
+                if (response.body() != null) {
+                    detail += " body=" + response.body().string();
+                }
+            } catch (IOException ignored) {
+            }
+        }
+        handler.onError("访问api发生错误！" + detail, t);
     }
 
     @Override
     public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
         handler.onStart();
+    }
+
+    private static boolean isCanceled(Throwable t) {
+        if (t == null) {
+            return false;
+        }
+        String msg = t.getMessage();
+        return t instanceof IOException && msg != null && msg.toLowerCase().contains("cancel");
     }
 }

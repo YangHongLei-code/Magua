@@ -32,6 +32,9 @@ public class DialogueManagement {
     public List<DialogueInfo> getDialogueList() {
         List<DialogueInfo> dialogueInfos = new ArrayList<>();
         Path dir = AppHome.resolve().resolve("data/dialogues/");
+        if (!Files.isDirectory(dir)) {
+            return dialogueInfos;
+        }
 
         try (Stream<Path> stream = Files.walk(dir)) {
 
